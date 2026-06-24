@@ -285,7 +285,7 @@ header {
   overflow: visible;
   z-index: 5;
 }
-.excavation.open { height: 178px; }
+.excavation.open { height: 242px; }
 
 .exc-pit {
   position: absolute;
@@ -316,8 +316,8 @@ header {
 /* ── PUMP ───────────────────────────────── */
 .pump {
   position: absolute;
-  bottom: 165px;
-  left: 50%; transform: translateX(-50%);
+  bottom: 184px;
+  left: calc(50% + 99px); transform: translateX(-50%);
   display: flex; flex-direction:column; align-items:center;
   opacity:0; pointer-events:none;
   transition: opacity .5s;
@@ -336,7 +336,7 @@ header {
 .pu-val { font-size:12px; font-family:'Courier New',monospace; color:var(--n2-hi); font-weight:700; }
 
 .pump-hose {
-  width: 6px; height: 56px;
+  width: 6px; height: 72px;
   background: linear-gradient(180deg, var(--n2) 0%, rgba(24,136,188,.5) 100%);
   border-radius: 2px;
   position:relative; overflow:hidden;
@@ -347,12 +347,12 @@ header {
   height:12px; background:rgba(200,235,255,.8); border-radius:1px;
   animation: hose-bubble .42s linear infinite;
 }
-@keyframes hose-bubble { from{top:56px;opacity:1} to{top:-12px;opacity:0} }
+@keyframes hose-bubble { from{top:72px;opacity:1} to{top:-12px;opacity:0} }
 
 /* ── CABLE SYSTEM ───────────────────────── */
 .cable-system {
   position: absolute;
-  bottom: 75px; left:50%; transform:translateX(-50%);
+  bottom: 108px; left:50%; transform:translateX(-50%);
   display: flex; align-items:center;
   z-index: 10;
 }
@@ -391,24 +391,33 @@ header {
   );
 }
 
-/* N2 flow — animates within the inner channel */
+/* N2 flow — scrolling repeating stripes on a deep-blue base */
 .n2 {
   position:absolute;
   top:17px; bottom:17px; left:0; right:0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(24,136,188,.3) 15%,
-    rgba(40,168,220,.72) 38%,
-    rgba(80,200,240,.88) 50%,
-    rgba(40,168,220,.72) 62%,
-    rgba(24,136,188,.3) 85%,
-    transparent 100%
-  );
-  animation: n2-flow 2s linear infinite;
+  background-image:
+    repeating-linear-gradient(90deg,
+      rgba(255,255,255,.00)  0px,
+      rgba(255,255,255,.18) 7px,
+      rgba(160,228,255,.45) 13px,
+      rgba(255,255,255,.18) 19px,
+      rgba(255,255,255,.00) 24px
+    ),
+    linear-gradient(180deg,
+      rgba(8,64,120,.70)   0%,
+      rgba(24,136,188,.92) 30%,
+      rgba(70,190,238,.98) 50%,
+      rgba(24,136,188,.92) 70%,
+      rgba(8,64,120,.70)  100%
+    );
+  background-size: 24px 100%, 100% 100%;
+  animation: n2-scroll .85s linear infinite;
   transition: opacity .7s;
 }
-@keyframes n2-flow { from{transform:translateX(-55%)} to{transform:translateX(55%)} }
+@keyframes n2-scroll {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 24px 0, 0 0; }
+}
 .n2.paused { animation-play-state:paused; opacity:0; }
 .n2.empty  { opacity:0; animation:none; }
 .n2.drain  { animation: n2-drain .85s linear forwards; }
@@ -699,6 +708,99 @@ header {
 .ss-h { font-size:10px; font-family:'Courier New',monospace; font-weight:700; color:var(--green-hi); letter-spacing:.08em; text-transform:uppercase; margin-bottom:5px; }
 .ss-p { font-size:9px; font-family:'Courier New',monospace; color:var(--txt-lo); line-height:1.55; }
 .loop-ctr { font-size:9px; font-family:'Courier New',monospace; color:var(--txt-lo); text-align:center; margin-top:8px; letter-spacing:.04em; }
+
+/* ── ROAD WORK ZONE ─────────────────────── */
+.roadwork {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 18;
+  opacity: 0;
+  transition: opacity .5s .2s;
+}
+.roadwork.show { opacity: 1; }
+
+/* Cut/opening in road surface above pit */
+.rw-cut {
+  position: absolute;
+  top: 62px;
+  left: 50%; transform: translateX(-50%);
+  width: 206px; height: 25px;
+  background: linear-gradient(180deg, #0A0A0A 0%, #1A1A1A 100%);
+  border-left: 2px solid #555;
+  border-right: 2px solid #555;
+}
+/* Rough broken edge on cut */
+.rw-cut::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: repeating-linear-gradient(90deg, #444 0, #444 8px, #1A1A1A 8px, #1A1A1A 14px, #333 14px, #333 20px, #1A1A1A 20px, #1A1A1A 26px);
+}
+
+/* Traffic cone */
+.cone {
+  position: absolute;
+  top: 60px;
+  display: flex; flex-direction: column; align-items: center;
+}
+.cone-tri {
+  width: 0; height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 28px solid #D95000;
+  position: relative;
+}
+.cone-tri::before {
+  content: '';
+  position: absolute;
+  top: 9px; left: -6px;
+  width: 12px; height: 4px;
+  background: rgba(255,255,255,.78);
+  border-radius: 1px;
+}
+.cone-base {
+  width: 20px; height: 5px;
+  background: #A83A00;
+  border-radius: 1px 1px 0 0;
+}
+
+/* Striped warning barrier board */
+.rw-board {
+  position: absolute;
+  top: 58px;
+  width: 56px; height: 24px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #D95000 0, #D95000 5px,
+    #fff 5px, #fff 10px
+  );
+  border: 2px solid #1A1A1A;
+  border-radius: 1px;
+}
+/* Post below board */
+.rw-board::after {
+  content: '';
+  position: absolute;
+  top: 100%; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 6px;
+  background: #444;
+}
+
+/* Flashing amber beacon */
+.rw-beacon {
+  position: absolute;
+  top: 50px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--orange);
+  animation: beacon .9s ease-in-out infinite alternate;
+}
+@keyframes beacon {
+  from { opacity:.2; box-shadow: none; }
+  to   { opacity:1;  box-shadow: 0 0 14px 4px var(--orange); }
+}
 </style>
 </head>
 <body>
@@ -751,6 +853,18 @@ header {
     </div>
     <!-- Road -->
     <div class="road"><div class="road-stripe"></div></div>
+
+    <!-- Road work zone (appears on excavation) -->
+    <div class="roadwork" id="rw">
+      <div class="rw-cut"></div>
+      <div class="rw-beacon" style="left:calc(50% - 154px)"></div>
+      <div class="rw-board"  style="left:calc(50% - 180px)"></div>
+      <div class="cone" style="left:calc(50% - 145px)"><div class="cone-tri"></div><div class="cone-base"></div></div>
+      <div class="cone" style="left:calc(50% - 120px)"><div class="cone-tri"></div><div class="cone-base"></div></div>
+      <div class="cone" style="left:calc(50% + 100px)"><div class="cone-tri"></div><div class="cone-base"></div></div>
+      <div class="cone" style="left:calc(50% + 124px)"><div class="cone-tri"></div><div class="cone-base"></div></div>
+      <div class="rw-board"  style="left:calc(50% + 150px)"></div>
+    </div>
 
     <!-- Fault zone label (in scene, above ground) -->
     <div class="fault-zone-lbl" id="fzl">
@@ -940,37 +1054,37 @@ const STEPS = [
   {
     badge:'ALARM', title:'Fault Detected — Line Shutdown',
     desc:'Thermal quench detected in HTS-SEG-01B. Loss of superconductivity triggers automatic de-energisation of the full line. LN₂ circuit pressure holding at 1.2 bar. Dispatch repair crew and begin excavation procedure.',
-    dur:6
+    dur:3
   },
   {
     badge:'STEP 1', title:'Excavating Access Trench',
     desc:'Crew is excavating the road surface and soil above the faulty segment. Target depth 1.5m to expose valves XV-01L and XV-01R on either side of HTS-SEG-01B. Line remains de-energised.',
-    dur:9
+    dur:5
   },
   {
     badge:'STEP 2', title:'Close Isolation Valves',
     desc:'Closing XV-01L (left) and XV-01R (right) to isolate HTS-SEG-01B from the LN₂ circuit. Both valves confirm closed position. Segment B is now hydraulically isolated — internal LN₂ remains at 1.2 bar.',
-    dur:5
+    dur:3
   },
   {
     badge:'STEP 3', title:'Extract Liquid Nitrogen',
-    desc:'Extraction pump connected to service port on SEG-01B. Pumping LN₂ out of the isolated segment. Segment temperature rising to ambient (~295 K). Pressure venting to atmosphere. Do not open segment until below 0.1 bar.',
-    dur:12
+    desc:'Extraction pump connected to service port XV-01R. Pumping LN₂ out of the isolated segment via the right isolation valve. Segment temperature rising to ambient (~295 K). Pressure venting to atmosphere.',
+    dur:6
   },
   {
     badge:'STEP 4', title:'Remove Faulty Segment',
     desc:'SEG-01B at ambient temperature and pressure. Disconnecting bolted flanges from XV-01L and XV-01R. Lifting faulty segment clear of trench. Gap prepared for replacement unit.',
-    dur:6
+    dur:3
   },
   {
     badge:'STEP 5', title:'Install Replacement Segment',
     desc:'Lowering factory-tested replacement HTS segment into position. Connecting flanges to XV-01L and XV-01R. Torquing all bolts to spec. Performing leak test before re-introduction of LN₂.',
-    dur:7
+    dur:4
   },
   {
     badge:'DONE', title:'Valves Open — System Restored',
     desc:'Opening XV-01L then XV-01R. LN₂ floods the new segment, cooling it from 295 K to 77 K. Once cryogenic temperature confirmed, line is re-energised. Full superconducting operation restored.',
-    dur:8
+    dur:5
   }
 ];
 
@@ -1149,8 +1263,9 @@ function updateScene(s) {
   const btag  = document.getElementById('seg-b-tag');
   const fzl   = document.getElementById('fzl');
 
-  // Step 1: excavate
+  // Step 1: excavate + road work appears
   exc.classList.toggle('open', s >= 1);
+  document.getElementById('rw').classList.toggle('show', s >= 1);
 
   // Fault zone label: visible steps 0-3, hidden from 4 onward
   fzl.classList.toggle('gone', s >= 4);
