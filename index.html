@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTS Cable Repair Simulation</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #0d1117;
+  color: #e6edf3;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: linear-gradient(135deg, #161b22, #1c2333);
+  padding: 18px 32px;
+  border-bottom: 1px solid #30363d;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+header h1 {
+  font-size: 1.4rem;
+  color: #58a6ff;
+  letter-spacing: 0.5px;
+}
+
+header p {
+  color: #8b949e;
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+/* ===== LAYOUT ===== */
+.layout {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  flex: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ===== SCENE CONTAINER ===== */
+.scene-container {
+  flex: 1.8;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.scene-bar {
+  background: #1c2333;
+  padding: 8px 16px;
+  font-size: 0.75rem;
+  color: #8b949e;
+  border-bottom: 1px solid #30363d;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.indicators {
+  display: flex;
+  gap: 14px;
+}
+
+.ind {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: background 0.5s, box-shadow 0.5s;
+}
+
+.dot-n2  { background: #58a6ff; box-shadow: 0 0 6px #58a6ffaa; }
+.dot-n2.off  { background: #3d4550; box-shadow: none; }
+
+.dot-pwr { background: #ffd700; box-shadow: 0 0 6px #ffd700aa; }
+.dot-pwr.off { background: #3d4550; box-shadow: none; }
+
+.dot-flt { background: #f85149; box-shadow: 0 0 6px #f85149aa; animation: blink 0.9s ease-in-out infinite; }
+.dot-flt.off { background: #3d4550; box-shadow: none; animation: none; }
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ===== SCENE ===== */
+.scene {
+  position: relative;
+  height: 380px;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Sky */
+.sky {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 58px;
+  background: linear-gradient(180deg, #0b1622 0%, #1a3a5c 100%);
+}
+
+/* Road */
+.road {
+  position: absolute;
+  top: 58px; left: 0; right: 0;
+  height: 22px;
+  background: #252525;
+  border-bottom: 2px solid #333;
+}
+
+.road-stripe {
+  position: absolute;
+  top: 50%;
+  left: 10%; right: 10%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: repeating-linear-gradient(
+    90deg,
+    #ffd700cc 0, #ffd700cc 28px,
+    transparent 28px, transparent 56px
+  );
+}
+
+/* Ground */
+.ground {
+  position: absolute;
+  top: 80px; left: 0; right: 0; bottom: 0;
+  background: #3d2b1f;
+  overflow: hidden;
+}
+
+/* Dirt texture */
+.ground::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 8%  20%, rgba(0,0,0,.18) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 23% 55%, rgba(255,255,255,.04) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 38% 10%, rgba(0,0,0,.12) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 52% 72%, rgba(255,255,255,.03) 2px, transparent 2px),
+    radial-gradient(circle at 68% 32%, rgba(0,0,0,.15) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 83% 61%, rgba(255,255,255,.04) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 91% 85%, rgba(0,0,0,.12) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 15% 88%, rgba(255,255,255,.03) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 75% 12%, rgba(0,0,0,.1) 2px, transparent 2px);
+  pointer-events: none;
+}
+
+/* Depth ruler */
+.depth-ruler {
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  pointer-events: none;
+}
+
+.depth-tick {
+  font-size: 0.55rem;
+  color: #5c4a3a;
+  letter-spacing: 0.5px;
+}
+
+/* ===== EXCAVATION ===== */
+.excavation {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 350px;
+  height: 0;
+  transition: height 1.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.excavation.open {
+  height: 165px;
+}
+
+.exc-pit {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, #1a120c 0%, #2a1f15 100%);
+  border-left: 3px solid #4a3828;
+  border-right: 3px solid #4a3828;
+  border-bottom: 2px solid #4a3828;
+}
+
+.dirt-pile {
+  position: absolute;
+  bottom: 0;
+  width: 55px;
+  height: 22px;
+  border-radius: 50% 50% 0 0;
+  background: radial-gradient(ellipse at 50% 100%, #5c3d2e 0%, #3d2b1f 100%);
+  opacity: 0;
+  transition: opacity 0.6s 0.8s;
+}
+.excavation.open .dirt-pile { opacity: 1; }
+.dirt-pile.l { left: -58px; }
+.dirt-pile.r { right: -58px; }
+
+/* ===== PUMP ASSEMBLY ===== */
+.pump {
+  position: absolute;
+  bottom: 165px;   /* above cable: 50+52+63 */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s;
+  z-index: 30;
+}
+
+.pump.visible { opacity: 1; }
+
+.pump-head {
+  background: #1c2d3f;
+  border: 1.5px solid #58a6ff;
+  border-radius: 8px;
+  padding: 5px 14px;
+  font-size: 0.62rem;
+  color: #58a6ff;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  box-shadow: 0 0 12px #58a6ff44;
+}
+
+.pump-hose {
+  width: 6px;
+  height: 52px;
+  background: linear-gradient(180deg, #58a6ff 0%, #1a6abf 100%);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pump-hose::after {
+  content: '';
+  position: absolute;
+  left: 1px; right: 1px;
+  height: 14px;
+  background: rgba(200, 230, 255, 0.7);
+  border-radius: 2px;
+  animation: pump-bubble 0.45s linear infinite;
+}
+
+@keyframes pump-bubble {
+  from { top: 52px; opacity: 1; }
+  to   { top: -14px; opacity: 0; }
+}
+
+/* ===== CABLE SYSTEM ===== */
+.cable-system {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  z-index: 10;
+}
+
+/* End caps */
+.end-cap {
+  width: 18px;
+  height: 54px;
+  background: linear-gradient(180deg, #707070 0%, #404040 50%, #606060 100%);
+  border: 2px solid #888;
+}
+.end-cap.l { border-radius: 8px 0 0 8px; border-right: none; }
+.end-cap.r { border-radius: 0 8px 8px 0; border-left: none; }
+
+/* Segment */
+.seg {
+  width: 160px;
+  height: 54px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.seg-shell {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #707070 0%, #484848 45%, #383838 55%, #585858 100%);
+  border: 2px solid #888;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: box-shadow 0.6s;
+}
+
+.seg-inner {
+  position: absolute;
+  top: 9px; left: 0; right: 0; bottom: 9px;
+  background: #1e1e1e;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+/* N2 flow */
+.n2 {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(88,166,255,.28) 18%,
+    rgba(130,200,255,.65) 38%,
+    rgba(170,220,255,.8) 50%,
+    rgba(130,200,255,.65) 62%,
+    rgba(88,166,255,.28) 82%,
+    transparent 100%
+  );
+  animation: n2flow 2.2s linear infinite;
+  transition: opacity 0.7s;
+}
+
+@keyframes n2flow {
+  from { transform: translateX(-60%); }
+  to   { transform: translateX(60%); }
+}
+
+.n2.paused  { animation-play-state: paused; opacity: 0; }
+.n2.empty   { opacity: 0; animation: none; }
+.n2.draining {
+  animation: n2drain 0.7s linear forwards;
+}
+@keyframes n2drain {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* Electricity glow (powered) */
+.seg.powered .seg-shell {
+  box-shadow: 0 0 18px 4px rgba(255,215,0,.32), inset 0 0 8px rgba(255,215,0,.1);
+}
+
+/* Fault */
+.seg.fault .seg-shell {
+  animation: fault-glow 0.85s ease-in-out infinite alternate;
+}
+@keyframes fault-glow {
+  from { box-shadow: 0 0 8px 2px rgba(248,81,73,.4); }
+  to   { box-shadow: 0 0 28px 8px rgba(248,81,73,.9); }
+}
+
+/* New segment */
+.seg.new-seg .seg-shell {
+  background: linear-gradient(180deg, #808080 0%, #585858 45%, #484848 55%, #686868 100%);
+  border-color: #3fb950;
+  box-shadow: 0 0 16px 3px rgba(63,185,80,.4);
+}
+
+/* Segment label */
+.seg-label {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.62rem;
+  color: #8b949e;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+}
+
+.seg.fault .seg-label { color: #f85149; }
+.seg.new-seg .seg-label { color: #3fb950; }
+
+/* Fault icon */
+.fault-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  animation: fault-glow2 0.85s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 5;
+}
+@keyframes fault-glow2 {
+  from { filter: drop-shadow(0 0 3px rgba(248,81,73,.6)); }
+  to   { filter: drop-shadow(0 0 10px rgba(248,81,73,1)); }
+}
+
+/* Gap (segment removed) */
+.seg-gap {
+  width: 160px;
+  height: 54px;
+  background: rgba(0,0,0,.5);
+  border: 2px dashed #30363d;
+  border-radius: 4px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  color: #484f58;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+.seg-gap.visible { display: flex; }
+
+/* ===== CONNECTORS ===== */
+.conn {
+  width: 34px;
+  height: 60px;
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+}
+
+.conn-body {
+  width: 32px;
+  height: 58px;
+  border-radius: 6px;
+  border: 2px solid #777;
+  background: #484848;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: background 0.5s, border-color 0.5s, box-shadow 0.5s;
+  position: relative;
+  overflow: hidden;
+}
+
+.conn-body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.06) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.valve {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #888;
+  background: #3a3a3a;
+  position: relative;
+  transition: background 0.4s, border-color 0.4s, box-shadow 0.4s;
+}
+
+/* Open valve — bar rotated 0deg (flow through) */
+.valve::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 2px;
+  height: 8px;
+  background: #888;
+  transform: translate(-50%, -50%) rotate(90deg);
+  transition: transform 0.4s, background 0.4s;
+  border-radius: 1px;
+}
+
+.conn.open .conn-body  { background: #1a3a28; border-color: #3fb950; box-shadow: 0 0 12px #3fb95055; }
+.conn.open .valve       { background: #3fb950; border-color: #2ea040; box-shadow: 0 0 6px #3fb95066; }
+.conn.open .valve::before { background: #1a3a28; }
+
+.conn.closed .conn-body { background: #3a1414; border-color: #f85149; box-shadow: 0 0 12px #f8514955; }
+.conn.closed .valve      { background: #f85149; border-color: #d03434; box-shadow: 0 0 6px #f8514966; }
+.conn.closed .valve::before { background: #3a1414; transform: translate(-50%, -50%) rotate(0deg); }
+
+/* Connector label */
+.conn-label {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.55rem;
+  color: #5a6470;
+  white-space: nowrap;
+}
+
+/* ===== CABLE FLOAT ANIMATION ===== */
+.seg.lifting {
+  transition: transform 0.9s ease-in, opacity 0.9s ease-in;
+  transform: translateY(-180px);
+  opacity: 0;
+}
+
+.seg.dropping {
+  transition: transform 0.9s cubic-bezier(0.34, 1.2, 0.64, 1), opacity 0.6s;
+}
+
+/* ===== CONTROL PANEL ===== */
+.control-panel {
+  flex: 1;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-hdr {
+  background: #1c2333;
+  padding: 10px 16px;
+  font-size: 0.72rem;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #30363d;
+}
+
+.card-body {
+  padding: 16px;
+}
+
+.step-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e6edf3;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.step-desc {
+  font-size: 0.82rem;
+  color: #8b949e;
+  line-height: 1.65;
+  margin-bottom: 16px;
+  min-height: 80px;
+}
+
+.action-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.4px;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.3s;
+  background: linear-gradient(135deg, #1f6feb, #0d5bcd);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(31,111,235,.3);
+}
+
+.action-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 18px rgba(31,111,235,.45);
+}
+
+.action-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.action-btn:disabled {
+  background: #21262d;
+  color: #484f58;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.action-btn.danger {
+  background: linear-gradient(135deg, #b91c1c, #991b1b);
+  box-shadow: 0 2px 8px rgba(185,28,28,.3);
+}
+.action-btn.danger:hover:not(:disabled) { box-shadow: 0 5px 18px rgba(185,28,28,.45); }
+
+.action-btn.go {
+  background: linear-gradient(135deg, #15803d, #166534);
+  box-shadow: 0 2px 8px rgba(21,128,61,.3);
+}
+.action-btn.go:hover:not(:disabled) { box-shadow: 0 5px 18px rgba(21,128,61,.45); }
+
+/* Progress list */
+.steps-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.si {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  color: #484f58;
+  transition: all 0.3s;
+  border-left: 2px solid transparent;
+}
+
+.si.done    { color: #3fb950; }
+.si.active  { color: #e6edf3; background: rgba(31,111,235,.1); border-left-color: #1f6feb; }
+.si.fault-s { color: #f85149; }
+
+.si-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #21262d;
+  border: 2px solid #30363d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.63rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.si.done  .si-num { background: #1a4a2a; border-color: #3fb950; color: #3fb950; }
+.si.active .si-num { background: #1a3a6a; border-color: #1f6feb; color: #58a6ff; box-shadow: 0 0 8px #1f6feb55; }
+.si.fault-s .si-num { background: #4a1414; border-color: #f85149; color: #f85149; animation: blink 0.9s ease-in-out infinite; }
+
+/* Complete banner */
+.success-banner {
+  display: none;
+  background: linear-gradient(135deg, #1a4a2a, #1b4332);
+  border: 1px solid #3fb950;
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+  margin-top: 12px;
+}
+.success-banner.on { display: block; }
+.success-banner h3 { color: #3fb950; font-size: 0.95rem; margin-bottom: 4px; }
+.success-banner p  { color: #7ee787; font-size: 0.78rem; }
+
+.reset-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px;
+  background: transparent;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #8b949e;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.reset-btn:hover { border-color: #58a6ff; color: #58a6ff; }
+
+/* Legend */
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.leg-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: #8b949e;
+}
+
+.leg-swatch {
+  width: 22px;
+  height: 9px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>⚡ Superconductor Cable Repair Simulation</h1>
+    <p>HTS cable fault — step-by-step segment replacement procedure</p>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SCENE -->
+  <div class="scene-container">
+    <div class="scene-bar">
+      <span>Cross-section view — Underground HTS Cable System</span>
+      <div class="indicators">
+        <div class="ind"><div class="dot dot-n2" id="dot-n2"></div><span>LN₂ Flow</span></div>
+        <div class="ind"><div class="dot dot-pwr" id="dot-pwr"></div><span>Power</span></div>
+        <div class="ind"><div class="dot dot-flt" id="dot-flt"></div><span>Fault</span></div>
+      </div>
+    </div>
+
+    <div class="scene">
+      <!-- Sky -->
+      <div class="sky"></div>
+
+      <!-- Road -->
+      <div class="road">
+        <div class="road-stripe"></div>
+      </div>
+
+      <!-- Ground -->
+      <div class="ground">
+
+        <!-- Depth ruler -->
+        <div class="depth-ruler">
+          <div class="depth-tick">0.5m</div>
+          <div class="depth-tick">1.0m</div>
+          <div class="depth-tick">1.5m</div>
+          <div class="depth-tick">2.0m</div>
+        </div>
+
+        <!-- Excavation pit -->
+        <div class="excavation" id="exc">
+          <div class="exc-pit"></div>
+          <div class="dirt-pile l"></div>
+          <div class="dirt-pile r"></div>
+        </div>
+
+        <!-- Pump assembly -->
+        <div class="pump" id="pump">
+          <div class="pump-head">N₂ EXTRACTION PUMP</div>
+          <div class="pump-hose"></div>
+        </div>
+
+        <!-- Cable system -->
+        <div class="cable-system" id="cable-system">
+          <div class="end-cap l"></div>
+
+          <!-- Segment A (left) -->
+          <div class="seg powered" id="seg-a">
+            <div class="seg-label">Segment A</div>
+            <div class="seg-shell">
+              <div class="seg-inner">
+                <div class="n2" id="n2-a"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Left connector -->
+          <div class="conn open" id="conn-l">
+            <div class="conn-body">
+              <div class="valve"></div>
+            </div>
+            <div class="conn-label">Valve 1</div>
+          </div>
+
+          <!-- Segment B (middle / faulty) -->
+          <div class="seg fault" id="seg-b">
+            <div class="seg-label" id="seg-b-label">Faulty Segment</div>
+            <div class="seg-shell">
+              <div class="seg-inner">
+                <div class="n2" id="n2-b"></div>
+              </div>
+            </div>
+            <div class="fault-icon" id="fault-icon">⚠️</div>
+          </div>
+
+          <!-- Segment B gap (shown when removed) -->
+          <div class="seg-gap" id="seg-gap">Empty Bay</div>
+
+          <!-- Right connector -->
+          <div class="conn open" id="conn-r">
+            <div class="conn-body">
+              <div class="valve"></div>
+            </div>
+            <div class="conn-label">Valve 2</div>
+          </div>
+
+          <!-- Segment C (right) -->
+          <div class="seg powered" id="seg-c">
+            <div class="seg-label">Segment C</div>
+            <div class="seg-shell">
+              <div class="seg-inner">
+                <div class="n2" id="n2-c"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="end-cap r"></div>
+        </div><!-- /cable-system -->
+
+      </div><!-- /ground -->
+    </div><!-- /scene -->
+  </div><!-- /scene-container -->
+
+  <!-- CONTROL PANEL -->
+  <div class="control-panel">
+
+    <!-- Current step -->
+    <div class="card">
+      <div class="card-hdr">Current Step</div>
+      <div class="card-body">
+        <div class="step-title" id="step-title">Fault Detected</div>
+        <div class="step-desc" id="step-desc">
+          A fault has been detected in the middle cable segment. The liquid nitrogen cooling is compromised and the segment must be replaced. The entire line is now at risk — begin the repair procedure.
+        </div>
+        <button class="action-btn" id="action-btn" onclick="advance()">
+          Start: Excavate Ground →
+        </button>
+        <div class="success-banner" id="success-banner">
+          <h3>✓ Repair Complete</h3>
+          <p>New segment installed. LN₂ flowing, power restored to full line.</p>
+        </div>
+        <button class="reset-btn" onclick="reset()">↺ Restart Simulation</button>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="card">
+      <div class="card-hdr">Repair Procedure</div>
+      <div class="card-body">
+        <ul class="steps-list" id="steps-list">
+          <li class="si fault-s" data-i="0"><div class="si-num">!</div><span>Fault detected in segment B</span></li>
+          <li class="si"        data-i="1"><div class="si-num">1</div><span>Excavate ground above segment</span></li>
+          <li class="si"        data-i="2"><div class="si-num">2</div><span>Close isolation valves</span></li>
+          <li class="si"        data-i="3"><div class="si-num">3</div><span>Extract liquid nitrogen</span></li>
+          <li class="si"        data-i="4"><div class="si-num">4</div><span>Remove faulty segment</span></li>
+          <li class="si"        data-i="5"><div class="si-num">5</div><span>Install new segment</span></li>
+          <li class="si"        data-i="6"><div class="si-num">6</div><span>Open valves &amp; restore power</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="card">
+      <div class="card-hdr">Legend</div>
+      <div class="card-body">
+        <div class="legend">
+          <div class="leg-row">
+            <div class="leg-swatch" style="background:linear-gradient(90deg,#58a6ff88,#a8d8ffcc,#58a6ff88)"></div>
+            <span>Liquid nitrogen (LN₂) active flow</span>
+          </div>
+          <div class="leg-row">
+            <div class="leg-swatch" style="background:rgba(255,215,0,.35);border:1px solid #ffd700"></div>
+            <span>Superconducting — line powered</span>
+          </div>
+          <div class="leg-row">
+            <div class="leg-swatch" style="background:rgba(248,81,73,.35);border:1px solid #f85149"></div>
+            <span>Cable fault / warning</span>
+          </div>
+          <div class="leg-row">
+            <div class="leg-swatch" style="background:rgba(63,185,80,.35);border:1px solid #3fb950"></div>
+            <span>Valve open / new segment</span>
+          </div>
+          <div class="leg-row">
+            <div class="leg-swatch" style="background:rgba(248,81,73,.35);border:1px solid #f85149;border-style:dashed"></div>
+            <span>Valve closed / isolated</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /control-panel -->
+
+</div><!-- /layout -->
+
+<script>
+const STEPS = [
+  {
+    title: 'Fault Detected',
+    desc: 'A fault has been detected in the middle HTS cable segment (Segment B). The liquid nitrogen cooling is compromised. The entire line is de-energised as a safety measure. Begin the repair procedure.',
+    btn: 'Start: Excavate Ground →',
+    cls: ''
+  },
+  {
+    title: 'Step 1 — Excavating',
+    desc: 'Digging down to expose the cable segment and its isolation connectors. Once excavated, the connectors on each side of the faulty segment will be accessible.',
+    btn: 'Close Isolation Valves →',
+    cls: ''
+  },
+  {
+    title: 'Step 2 — Close Isolation Valves',
+    desc: 'Closing Valve 1 and Valve 2 on either side of the faulty segment. This isolates Segment B from the rest of the liquid nitrogen circuit — no LN₂ can flow in or out of it.',
+    btn: 'Connect N₂ Extraction Pump →',
+    cls: 'danger'
+  },
+  {
+    title: 'Step 3 — Extract Liquid Nitrogen',
+    desc: 'Connecting the extraction pump to a service port on the faulty segment. Pumping out the remaining liquid nitrogen so the segment can be safely handled at ambient temperature.',
+    btn: 'Remove Faulty Segment →',
+    cls: 'danger'
+  },
+  {
+    title: 'Step 4 — Remove Faulty Segment',
+    desc: 'Segment B has been depressurised and warmed to ambient temperature. Disconnecting the mechanical flanges and lifting the faulty segment out of the trench.',
+    btn: 'Install New Segment →',
+    cls: ''
+  },
+  {
+    title: 'Step 5 — Install New Segment',
+    desc: 'Lowering the factory-tested replacement HTS segment into the bay. Connecting the flanges to both isolation valves and verifying all seals are tight before re-introduction of LN₂.',
+    btn: 'Open Valves & Restore Power →',
+    cls: 'go'
+  },
+  {
+    title: 'Step 6 — System Restored',
+    desc: 'Opening Valve 1 and Valve 2. Liquid nitrogen floods the new segment and cools it to superconducting temperature. The line is re-energised. Repair complete.',
+    btn: '',
+    cls: ''
+  }
+];
+
+let state = 0;
+let animLock = false;
+
+function advance() {
+  if (animLock) return;
+  state++;
+  if (state >= STEPS.length) return;
+  applyState(state);
+}
+
+function applyState(s) {
+  updatePanel(s);
+  updateScene(s);
+}
+
+function updatePanel(s) {
+  const d = STEPS[s];
+  document.getElementById('step-title').textContent = d.title;
+  document.getElementById('step-desc').textContent = d.desc;
+
+  const btn = document.getElementById('action-btn');
+  btn.textContent = d.btn;
+  btn.className = 'action-btn' + (d.cls ? ' ' + d.cls : '');
+  btn.style.display = d.btn ? '' : 'none';
+
+  if (s === STEPS.length - 1) {
+    document.getElementById('success-banner').classList.add('on');
+  } else {
+    document.getElementById('success-banner').classList.remove('on');
+  }
+
+  // Progress list
+  document.querySelectorAll('.si').forEach((el, i) => {
+    el.classList.remove('done', 'active', 'fault-s');
+    if (i === 0) {
+      el.classList.add(s > 0 ? 'done' : 'fault-s');
+    } else {
+      if (i < s)       el.classList.add('done');
+      else if (i === s) el.classList.add('active');
+    }
+  });
+
+  // Status dots
+  const n2  = document.getElementById('dot-n2');
+  const pwr = document.getElementById('dot-pwr');
+  const flt = document.getElementById('dot-flt');
+
+  // N2: off from step 3 (pumped) to step 5 (before valves open), on otherwise
+  n2.classList.toggle('off', s >= 3 && s <= 5);
+  // Power: off from step 1 until step 6
+  pwr.classList.toggle('off', s >= 1 && s < 6);
+  // Fault: gone from step 5 (new segment installed)
+  flt.classList.toggle('off', s >= 5);
+}
+
+function updateScene(s) {
+  const exc    = document.getElementById('exc');
+  const pump   = document.getElementById('pump');
+  const connL  = document.getElementById('conn-l');
+  const connR  = document.getElementById('conn-r');
+  const segA   = document.getElementById('seg-a');
+  const segB   = document.getElementById('seg-b');
+  const segGap = document.getElementById('seg-gap');
+  const segC   = document.getElementById('seg-c');
+  const n2A    = document.getElementById('n2-a');
+  const n2B    = document.getElementById('n2-b');
+  const n2C    = document.getElementById('n2-c');
+  const fi     = document.getElementById('fault-icon');
+  const lbl    = document.getElementById('seg-b-label');
+
+  // Step 1: Excavate
+  exc.classList.toggle('open', s >= 1);
+
+  // Step 2: Close valves, kill power
+  if (s >= 2) {
+    connL.className = 'conn closed';
+    connR.className = 'conn closed';
+    segA.classList.remove('powered');
+    segC.classList.remove('powered');
+    n2A.classList.add('paused');
+    n2C.classList.add('paused');
+  } else {
+    connL.className = 'conn open';
+    connR.className = 'conn open';
+    segA.classList.add('powered');
+    segC.classList.add('powered');
+    n2A.classList.remove('paused', 'empty', 'draining');
+    n2C.classList.remove('paused', 'empty', 'draining');
+  }
+
+  // Step 3: Pump + drain N2 from B
+  if (s === 3) {
+    pump.classList.add('visible');
+    n2B.classList.add('draining');
+    setTimeout(() => {
+      n2B.classList.remove('draining');
+      n2B.classList.add('empty');
+    }, 800);
+  } else if (s < 3) {
+    pump.classList.remove('visible');
+    n2B.classList.remove('draining', 'empty', 'paused');
+  } else {
+    pump.classList.remove('visible');
+  }
+
+  // Step 4: Remove segment
+  if (s === 4) {
+    animLock = true;
+    segB.classList.add('lifting');
+    setTimeout(() => {
+      segB.style.display = 'none';
+      segB.classList.remove('lifting');
+      segGap.classList.add('visible');
+      animLock = false;
+    }, 950);
+  } else if (s < 4) {
+    segB.style.display = '';
+    segB.style.transform = '';
+    segB.style.opacity = '';
+    segGap.classList.remove('visible');
+  }
+
+  // Step 5: Install new segment
+  if (s === 5) {
+    animLock = true;
+    segGap.classList.remove('visible');
+    segB.style.display = '';
+    segB.classList.remove('fault');
+    segB.classList.add('new-seg');
+    fi.style.display = 'none';
+    lbl.textContent = 'New Segment';
+    n2B.classList.remove('draining', 'empty');
+    // Drop-in animation
+    segB.style.transform = 'translateY(-180px)';
+    segB.style.opacity = '0';
+    segB.style.transition = 'none';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        segB.style.transition = 'transform 0.85s cubic-bezier(0.34,1.15,0.64,1), opacity 0.6s';
+        segB.style.transform = 'translateY(0)';
+        segB.style.opacity = '1';
+        setTimeout(() => { animLock = false; }, 900);
+      });
+    });
+  } else if (s < 5) {
+    segB.classList.remove('new-seg');
+    segB.classList.add('fault');
+    fi.style.display = '';
+    lbl.textContent = 'Faulty Segment';
+    segB.style.transform = '';
+    segB.style.opacity = '';
+    segB.style.transition = '';
+    n2B.classList.remove('empty');
+  }
+
+  // Step 6: Open valves, restore everything
+  if (s >= 6) {
+    connL.className = 'conn open';
+    connR.className = 'conn open';
+    n2A.classList.remove('paused', 'draining', 'empty');
+    n2B.classList.remove('paused', 'draining', 'empty');
+    n2C.classList.remove('paused', 'draining', 'empty');
+    segA.classList.add('powered');
+    segC.classList.add('powered');
+    segB.classList.add('new-seg');
+  }
+}
+
+function reset() {
+  animLock = false;
+  state = 0;
+
+  // Panel
+  const d = STEPS[0];
+  document.getElementById('step-title').textContent = d.title;
+  document.getElementById('step-desc').textContent  = d.desc;
+  const btn = document.getElementById('action-btn');
+  btn.textContent  = d.btn;
+  btn.className    = 'action-btn';
+  btn.style.display = '';
+  document.getElementById('success-banner').classList.remove('on');
+
+  document.querySelectorAll('.si').forEach((el, i) => {
+    el.classList.remove('done', 'active', 'fault-s');
+    if (i === 0) el.classList.add('fault-s');
+  });
+
+  // Status dots
+  document.getElementById('dot-n2').classList.remove('off');
+  document.getElementById('dot-pwr').classList.remove('off');
+  document.getElementById('dot-flt').classList.remove('off');
+
+  // Scene elements
+  document.getElementById('exc').classList.remove('open');
+  document.getElementById('pump').classList.remove('visible');
+
+  const connL = document.getElementById('conn-l');
+  const connR = document.getElementById('conn-r');
+  connL.className = 'conn open';
+  connR.className = 'conn open';
+
+  const segA = document.getElementById('seg-a');
+  const segB = document.getElementById('seg-b');
+  const segC = document.getElementById('seg-c');
+  const segGap = document.getElementById('seg-gap');
+
+  segA.className = 'seg powered';
+  segC.className = 'seg powered';
+  segB.className = 'seg fault';
+  segB.style.display = '';
+  segB.style.transform = '';
+  segB.style.opacity = '';
+  segB.style.transition = '';
+  segGap.classList.remove('visible');
+
+  document.getElementById('fault-icon').style.display = '';
+  document.getElementById('seg-b-label').textContent = 'Faulty Segment';
+
+  ['n2-a','n2-b','n2-c'].forEach(id => {
+    const el = document.getElementById(id);
+    el.className = 'n2';
+  });
+}
+</script>
+</body>
+</html>
