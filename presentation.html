@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SPLICE — Group B06</title>
+<title>SPLICE Group B06</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,6 +57,44 @@
 
 @keyframes n2flow { to { background-position: 24px 0, 0 0; } }
 @media (prefers-reduced-motion: reduce) { .n2-layer { animation:none !important; } }
+
+/* ── PRINT / PDF MODE ─────────────────────────────────────
+   Open with ?print-pdf in Chrome, then File › Print › Save as PDF
+   Paper: A4 Landscape, Margins: None, Background graphics: ON
+─────────────────────────────────────────────────────────── */
+.print-only { display:none !important; }
+html.print-pdf .print-only { display:flex !important; }
+html.print-pdf .screen-only { display:none !important; }
+
+/* Cover interactive note (print only) */
+.cv-print-note {
+  margin-top:18px; padding:14px 18px;
+  border:1px solid rgba(237,242,247,.2);
+  font-family:Manrope,sans-serif; font-weight:400;
+  font-size:13px; line-height:1.6; color:rgba(237,242,247,.55);
+  max-width:480px;
+}
+.cv-print-note strong {
+  display:block; color:rgba(237,242,247,.8);
+  font-weight:600; margin-bottom:3px;
+}
+
+/* Simulation placeholder (print only) */
+.sim-placeholder {
+  flex:1; flex-direction:column;
+  align-items:center; justify-content:center; gap:18px;
+  background:var(--surf); border:1px solid var(--border);
+  margin:0 32px 20px;
+}
+.sim-placeholder p {
+  font-family:Manrope,sans-serif; font-size:18px;
+  color:var(--dim); text-align:center; line-height:1.6;
+}
+.sim-placeholder a {
+  font-family:Manrope,sans-serif; font-weight:700;
+  font-size:20px; color:var(--blue); text-decoration:none;
+  word-break:break-all;
+}
 
 .cable-grad {
   background: linear-gradient(180deg,
@@ -301,6 +339,11 @@
     <div class="cv-main">
       <div class="cv-title">SPLICE</div>
       <div class="cv-sub">Connector for Superconductor Cables</div>
+      <div class="cv-print-note print-only">
+        <strong>This presentation is interactive.</strong>
+        To view the live version with simulation, go to:<br>
+        apros7.github.io/DTU-innovation-pitch/presentation.html
+      </div>
     </div>
     <div class="cv-logos">
       <img src="dtu_logo.png" alt="DTU">
@@ -317,7 +360,7 @@
 <!-- ═══ 02 THE PROBLEM ══════════════════════════════════ -->
 <section>
 <div class="sl">
-  <div class="sl-top"><b>01</b> &nbsp;—&nbsp; The Problem</div>
+  <div class="sl-top"><b>01</b> &nbsp; The Problem</div>
   <div class="s2-layout">
     <div class="s2-left">
       <h2 class="sl-h" style="font-size:54px;">When a cable fails,<br>everything stops.</h2>
@@ -355,7 +398,7 @@
 <!-- ═══ 03 SPLICE — OUR SOLUTION ════════════════════════ -->
 <section>
 <div class="sl">
-  <div class="sl-top"><b>02</b> &nbsp;—&nbsp; Our Solution</div>
+  <div class="sl-top"><b>02</b> &nbsp; Our Solution</div>
   <div class="s3-layout">
     <div class="s3-left">
       <h2 class="sl-h">SPLICE</h2>
@@ -365,7 +408,7 @@
       </p>
       <p class="sl-p">
         Close two SPLICE connectors to isolate a single section.
-        Drain it, swap it, restore — while the rest of the line
+        Drain it, swap it, restore. The rest of the line
         stays live and cold throughout.
       </p>
     </div>
@@ -380,7 +423,7 @@
 <!-- ═══ 04 SENSORS & TECHNICAL ══════════════════════════ -->
 <section>
 <div class="sl">
-  <div class="sl-top"><b>03</b> &nbsp;—&nbsp; Sensors &amp; Monitoring</div>
+  <div class="sl-top"><b>03</b> &nbsp; Sensors &amp; Monitoring</div>
   <div class="s5-layout">
     <div class="s5-img">
       <img src="technical_specification_2.png" alt="Smart superconductor cable cross-section">
@@ -424,17 +467,21 @@
 <!-- ═══ 05 SIMULATION ════════════════════════════════════ -->
 <section>
 <div class="sl">
-  <div class="sl-top"><b>04</b> &nbsp;—&nbsp; Live Simulation</div>
+  <div class="sl-top"><b>04</b> &nbsp; Live Simulation</div>
   <div style="padding:8px 64px 0; flex-shrink:0;">
     <h2 class="sl-h" style="font-size:46px;">See it work.</h2>
   </div>
   <div class="s4-body">
     <div class="s4-meta">
-      <span>Interactive repair walkthrough — SEG-B fault scenario</span>
+      <span>Interactive repair walkthrough, SEG-B fault scenario</span>
       <span>Controls inside the simulation</span>
     </div>
-    <div class="s4-frame" id="sim-wrap">
+    <div class="s4-frame screen-only" id="sim-wrap">
       <iframe id="sim-iframe" scrolling="no" title="SPLICE Simulation"></iframe>
+    </div>
+    <div class="sim-placeholder print-only">
+      <p>Interactive simulation, not available in PDF.</p>
+      <a>apros7.github.io/DTU-innovation-pitch/presentation.html</a>
     </div>
   </div>
 </div>
@@ -444,14 +491,14 @@
 <!-- ═══ 06 WHAT YOU GET + NEXT STEPS ════════════════════ -->
 <section>
 <div class="sl">
-  <div class="sl-top"><b>05</b> &nbsp;—&nbsp; Value &amp; Next Steps</div>
+  <div class="sl-top"><b>05</b> &nbsp; Value &amp; Next Steps</div>
   <div class="s6-layout">
     <div class="s6-left">
       <div class="benefit">
         <div class="ben-dot" style="background:var(--green)"></div>
         <div class="ben-text">
           Faster maintenance
-          <small>Surgical segment swap — line stays live</small>
+          <small>Surgical segment swap, line stays live</small>
         </div>
       </div>
       <div class="benefit">
@@ -474,7 +521,7 @@
         <div class="step-num">01</div>
         <div>
           <div class="step-title">Simulation <span class="done-tag">DONE</span></div>
-          <p class="step-desc">Interactive technician training tool — complete.</p>
+          <p class="step-desc">Interactive technician training tool, complete.</p>
         </div>
       </div>
       <div class="step-row">
