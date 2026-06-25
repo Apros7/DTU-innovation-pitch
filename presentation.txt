@@ -1,0 +1,29 @@
+Slide 1:
+- Name of concept (SPLICE), Group B06, DTU logo, NTK logo, 
+
+Slide 2 (maybe also 3):
+- Problem specification
+- What happens when there is a breakdown in the cable?
+- Where is that breakdown?
+- What happens if we want to replace or test improvements?
+- What happens if we need / want more information about our system?
+- You much more needed to spot errors, as nitrogen is much more dangerous that bare electricity lines
+- Small reference to COCOMO research
+
+Slide 4:
+- Our solution, SPLICE, intersection for superconductor cables
+- Show simulation
+
+Slide 5: Technical showcasing of sensors
+- Show images
+
+Slide 6: What you get
+- Much faster maintenance time
+- Happier Energinet, happier end users
+- Better ability to research improvements and degrading
+
+- Next steps:
+- 1. Make simulation (DONE)
+- 2. Validate concept through experimentation
+- 3. Installation on non-critical segment for testing and documentation of effect
+

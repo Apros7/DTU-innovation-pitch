@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPLICE — Group B06</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/theme/black.css">
+
+<style>
+:root {
+  --r-background-color:       #09101E;
+  --r-main-font:              Manrope, Arial, sans-serif;
+  --r-main-font-size:         16px;
+  --r-main-color:             #EDF2F7;
+  --r-heading-font:           Manrope, Arial, sans-serif;
+  --r-heading-color:          #EDF2F7;
+  --r-heading-line-height:    .93;
+  --r-heading-letter-spacing: -.02em;
+  --r-heading-text-transform: none;
+  --r-heading-text-shadow:    none;
+  --r-heading-font-weight:    800;
+  --r-block-margin:           0;
+
+  --bg:      #09101E;
+  --surf:    #0E1829;
+  --border:  #1A2B3F;
+  --white:   #EDF2F7;
+  --dim:     rgba(237,242,247,.6);
+  --gray:    #4A6278;
+  --blue:    #2B9FE8;
+  --blue-d:  #0B2540;
+  --orange:  #E0711A;
+  --green:   #22B870;
+  --mono:    'Courier New', monospace;
+}
+
+.reveal-viewport { background: var(--bg) !important; }
+.reveal { background: var(--bg); }
+.reveal .slides section {
+  padding: 0 !important; text-align: left !important;
+  height: 675px; overflow: hidden; box-sizing: border-box;
+}
+.reveal h1,.reveal h2,.reveal h3 { margin:0; padding:0; text-shadow:none; }
+.reveal p { margin:0; }
+.reveal section img,.reveal section iframe {
+  border:none; box-shadow:none; background:none; max-width:none; max-height:none;
+}
+.reveal .progress { background: rgba(255,255,255,.06); height: 3px; }
+.reveal .progress span { background: var(--orange); }
+.reveal .controls { color: var(--orange) !important; }
+
+@keyframes n2flow { to { background-position: 24px 0, 0 0; } }
+@media (prefers-reduced-motion: reduce) { .n2-layer { animation:none !important; } }
+
+.cable-grad {
+  background: linear-gradient(180deg,
+    #686C72 0%,#686C72 8%,#CEC8AC 8%,#CEC8AC 16%,
+    #9A7232 16%,#9A7232 23%,#141A1F 23%,#141A1F 77%,
+    #9A7232 77%,#9A7232 84%,#CEC8AC 84%,#CEC8AC 92%,
+    #686C72 92%,#686C72 100%);
+}
+.n2-layer {
+  position:absolute; top:23%; bottom:23%; left:0; right:0;
+  background-image:
+    repeating-linear-gradient(90deg,
+      transparent 0,rgba(255,255,255,.2) 7px,
+      rgba(140,218,255,.55) 13px,rgba(255,255,255,.2) 19px,transparent 24px),
+    linear-gradient(180deg,
+      rgba(8,64,120,.7) 0%,rgba(24,136,188,.92) 30%,
+      rgba(70,190,238,.98) 50%,rgba(24,136,188,.92) 70%,rgba(8,64,120,.7) 100%);
+  background-size: 24px 100%,100% 100%;
+  animation: n2flow .85s linear infinite;
+}
+
+/* ══ SHARED INTERIOR ══ */
+.sl {
+  display:flex; flex-direction:column;
+  height:100%; background:var(--bg); overflow:hidden;
+}
+.sl-top {
+  padding: 20px 64px 0; flex-shrink:0;
+  font-family:var(--mono); font-size:10px;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--gray);
+}
+.sl-top b { color:var(--orange); }
+
+/* ══ COVER ══════════════════════════════════════ */
+.cover {
+  position:relative; width:1200px; height:675px;
+  overflow:hidden; background:var(--bg);
+}
+.cv-byline {
+  position:absolute; top:36px; left:80px;
+  font-family:Manrope,sans-serif; font-weight:600;
+  font-size:13px; letter-spacing:.1em; text-transform:uppercase;
+  color:rgba(237,242,247,.35);
+}
+.cv-title {
+  position:absolute; bottom:405px; left:80px;
+  font-family:Manrope,sans-serif; font-weight:800;
+  font-size:116px; line-height:.92; letter-spacing:-.03em;
+  color:var(--white);
+}
+.cv-rule {
+  position:absolute; top:270px; left:0; right:0;
+  height:2px; background:var(--orange); z-index:10;
+}
+.cv-sub {
+  position:absolute; top:284px; left:80px;
+  font-family:Manrope,sans-serif; font-weight:300;
+  font-size:30px; line-height:1.2; color:rgba(237,242,247,.65);
+}
+.cv-sub {
+  max-width: 560px;
+}
+.cv-logos {
+  position:absolute; bottom:44px; left:80px;
+  display:flex; align-items:center; gap:20px; z-index:10;
+}
+.cv-logos img {
+  height:36px; width:auto; display:block;
+  background:white; padding:5px 9px;
+}
+/* Right-side connector image — rule cuts through it */
+.cv-img-panel {
+  position:absolute; right:0; top:0; bottom:0; width:460px;
+  background:#cdd2d8; overflow:hidden; z-index:1;
+}
+.cv-img-panel img {
+  width:100%; height:100%; object-fit:contain; object-position:center;
+  padding:28px;
+}
+
+/* ══ PROBLEM ═══════════════════════════════════ */
+.s2-layout {
+  flex:1; display:grid; grid-template-columns:1fr 1fr;
+  overflow:hidden;
+}
+.s2-left {
+  padding:44px 56px 44px 64px;
+  display:flex; flex-direction:column; justify-content:center; gap:24px;
+  border-right:1px solid var(--border);
+}
+.s2-right {
+  background:var(--surf);
+  padding:44px 56px;
+  display:flex; flex-direction:column; justify-content:center; gap:0;
+}
+.prob-item {
+  padding:22px 0; border-bottom:1px solid var(--border);
+  display:flex; align-items:baseline; gap:18px;
+}
+.prob-item:last-child { border:none; }
+.prob-dash { color:var(--orange); font-weight:800; font-size:22px; flex-shrink:0; }
+.prob-text {
+  font-family:Manrope,sans-serif; font-weight:600;
+  font-size:22px; line-height:1.3; color:var(--white);
+}
+.prob-text small {
+  display:block; font-weight:400; font-size:15px;
+  color:var(--dim); margin-top:3px;
+}
+
+/* ══ SPLICE (solution) ═════════════════════════ */
+.s3-layout {
+  flex:1; display:grid; grid-template-columns:1fr 1fr;
+  overflow:hidden;
+}
+.s3-left {
+  padding:44px 56px 44px 64px;
+  display:flex; flex-direction:column; justify-content:center; gap:22px;
+  border-right:1px solid var(--border);
+}
+.s3-right {
+  background:#f0f2f5;
+  display:flex; align-items:center; justify-content:center;
+  padding:24px; overflow:hidden;
+}
+.s3-right img {
+  width:100%; height:100%; object-fit:contain;
+}
+.sl-h {
+  font-family:Manrope,sans-serif; font-weight:800;
+  font-size:62px; line-height:.93; letter-spacing:-.02em; color:var(--white);
+}
+.sl-p {
+  font-family:Manrope,sans-serif; font-weight:400;
+  font-size:18px; color:var(--dim); line-height:1.65;
+}
+.o-rule { width:44px; height:2px; background:var(--orange); flex-shrink:0; }
+
+/* ══ SIMULATION ════════════════════════════════ */
+.s4-body {
+  flex:1; display:flex; flex-direction:column;
+  padding:10px 32px 20px; gap:10px; overflow:hidden;
+}
+.s4-meta {
+  display:flex; justify-content:space-between; align-items:center;
+  flex-shrink:0; font-family:var(--mono); font-size:9px;
+  color:var(--gray); letter-spacing:.1em; text-transform:uppercase;
+}
+.s4-frame { flex:1; border:1px solid var(--border); overflow:hidden; position:relative; }
+#sim-iframe { border:none; display:block; transform-origin:top left; }
+
+/* ══ SENSORS ═══════════════════════════════════ */
+.s5-layout {
+  flex:1; display:grid; grid-template-columns:3fr 2fr;
+  overflow:hidden;
+}
+.s5-img {
+  background:#e8ecf0;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; padding:20px;
+}
+.s5-img img { width:100%; height:100%; object-fit:contain; }
+.s5-right {
+  background:var(--surf); border-left:1px solid var(--border);
+  padding:44px 48px;
+  display:flex; flex-direction:column; justify-content:center; gap:28px;
+}
+.sensor-item { display:flex; flex-direction:column; gap:5px; }
+.sensor-dot {
+  width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:5px;
+}
+.sensor-row { display:flex; align-items:flex-start; gap:14px; }
+.sensor-name {
+  font-family:Manrope,sans-serif; font-weight:700;
+  font-size:20px; color:var(--white); line-height:1.2;
+}
+.sensor-desc {
+  font-family:Manrope,sans-serif; font-weight:400;
+  font-size:14px; color:var(--dim); line-height:1.55;
+}
+
+/* ══ BENEFITS + NEXT STEPS ══════════════════════ */
+.s6-layout {
+  flex:1; display:grid; grid-template-columns:1fr 1fr;
+  overflow:hidden;
+}
+.s6-left {
+  padding:40px 56px 44px 64px;
+  display:flex; flex-direction:column; justify-content:center; gap:32px;
+  border-right:1px solid var(--border);
+}
+.benefit {
+  display:flex; align-items:flex-start; gap:18px;
+}
+.ben-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:8px; }
+.ben-text {
+  font-family:Manrope,sans-serif; font-weight:700;
+  font-size:24px; color:var(--white); line-height:1.2;
+}
+.ben-text small {
+  display:block; font-weight:400; font-size:15px;
+  color:var(--dim); margin-top:4px;
+}
+.s6-right {
+  background:var(--blue-d);
+  padding:40px 52px 44px;
+  display:flex; flex-direction:column; justify-content:center; gap:0;
+}
+.step-row {
+  padding:20px 0; border-bottom:1px solid rgba(43,159,232,.14);
+  display:flex; gap:18px; align-items:flex-start;
+}
+.step-row:last-child { border:none; }
+.step-num {
+  font-family:var(--mono); font-size:10px; letter-spacing:.14em;
+  color:var(--blue); flex-shrink:0; margin-top:4px;
+}
+.step-title {
+  font-family:Manrope,sans-serif; font-weight:700;
+  font-size:20px; color:var(--white); line-height:1.15; margin-bottom:4px;
+}
+.step-row.done .step-title { color:var(--green); }
+.done-tag {
+  display:inline-block; margin-left:10px;
+  font-family:var(--mono); font-size:8px; letter-spacing:.12em;
+  background:rgba(34,184,112,.15); color:var(--green); padding:2px 7px;
+  vertical-align:middle;
+}
+.step-desc {
+  font-family:Manrope,sans-serif; font-size:14px;
+  color:var(--dim); line-height:1.5;
+}
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ═══ 01 COVER ════════════════════════════════════════ -->
+<section>
+<div class="cover">
+  <div class="cv-byline">Group B06</div>
+  <div class="cv-title">SPLICE</div>
+  <div class="cv-rule"></div>
+  <div class="cv-sub">Connector for Superconductor Cables</div>
+  <div class="cv-logos">
+    <img src="dtu_logo.png" alt="DTU">
+    <img src="NKT_logo.svg" alt="NKT">
+  </div>
+  <div class="cv-circle cable-grad"><div class="n2-layer"></div></div>
+  <div class="cv-rect"></div>
+</div>
+</section>
+
+
+<!-- ═══ 02 THE PROBLEM ══════════════════════════════════ -->
+<section>
+<div class="sl">
+  <div class="sl-top"><b>01</b> &nbsp;—&nbsp; The Problem</div>
+  <div class="s2-layout">
+    <div class="s2-left">
+      <h2 class="sl-h" style="font-size:54px;">When a cable fails,<br>everything stops.</h2>
+      <div class="o-rule"></div>
+      <p class="sl-p" style="font-size:17px;">
+        Current HTS cables have no way to isolate a faulty section.
+        The entire line must shut down for any intervention.
+      </p>
+    </div>
+    <div class="s2-right">
+      <div class="prob-item">
+        <div class="prob-dash">—</div>
+        <div class="prob-text">
+          Entire line offline immediately
+          <small>No isolation capability exists today</small>
+        </div>
+      </div>
+      <div class="prob-item">
+        <div class="prob-dash">—</div>
+        <div class="prob-text">
+          Liquid nitrogen is hazardous
+          <small>Specialist crew &amp; long site preparation required</small>
+        </div>
+      </div>
+      <div class="prob-item">
+        <div class="prob-dash">—</div>
+        <div class="prob-text">
+          No testability for R&amp;D
+          <small>Cannot isolate segments to research improvements or degradation</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══ 03 SPLICE — OUR SOLUTION ════════════════════════ -->
+<section>
+<div class="sl">
+  <div class="sl-top"><b>02</b> &nbsp;—&nbsp; Our Solution</div>
+  <div class="s3-layout">
+    <div class="s3-left">
+      <h2 class="sl-h">SPLICE</h2>
+      <div class="o-rule"></div>
+      <p style="font-family:Manrope,sans-serif; font-weight:600; font-size:24px; color:var(--white); line-height:1.35;">
+        An isolation connector between cable segments.
+      </p>
+      <p class="sl-p">
+        Close two SPLICE connectors to isolate a single section.
+        Drain it, swap it, restore — while the rest of the line
+        stays live and cold throughout.
+      </p>
+    </div>
+    <div class="s3-right">
+      <img src="technical_specification_1.png" alt="SPLICE cryogenic connector">
+    </div>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══ 04 SIMULATION ════════════════════════════════════ -->
+<section>
+<div class="sl">
+  <div class="sl-top"><b>03</b> &nbsp;—&nbsp; Live Simulation</div>
+  <div style="padding:8px 64px 0; flex-shrink:0;">
+    <h2 class="sl-h" style="font-size:46px;">See it work.</h2>
+  </div>
+  <div class="s4-body">
+    <div class="s4-meta">
+      <span>Interactive repair walkthrough — SEG-B fault scenario</span>
+      <span>Controls inside the simulation</span>
+    </div>
+    <div class="s4-frame" id="sim-wrap">
+      <iframe id="sim-iframe" src="index.html" scrolling="no" title="SPLICE Simulation"></iframe>
+    </div>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══ 05 SENSORS & TECHNICAL ══════════════════════════ -->
+<section>
+<div class="sl">
+  <div class="sl-top"><b>04</b> &nbsp;—&nbsp; Sensors &amp; Monitoring</div>
+  <div class="s5-layout">
+    <div class="s5-img">
+      <img src="technical_specification_2.png" alt="Smart superconductor cable cross-section">
+    </div>
+    <div class="s5-right">
+      <h2 class="sl-h" style="font-size:40px; margin-bottom:8px;">Smart Cable</h2>
+      <div class="o-rule" style="margin-bottom:20px;"></div>
+      <div class="sensor-item">
+        <div class="sensor-row">
+          <div class="sensor-dot" style="background:var(--blue); margin-top:6px;"></div>
+          <div>
+            <div class="sensor-name">Fiber optic — DTS</div>
+            <p class="sensor-desc">Distributed temperature sensing along full cable length</p>
+          </div>
+        </div>
+      </div>
+      <div class="sensor-item">
+        <div class="sensor-row">
+          <div class="sensor-dot" style="background:var(--orange); margin-top:6px;"></div>
+          <div>
+            <div class="sensor-name">Pressure sensor</div>
+            <p class="sensor-desc">Monitors LN₂ pressure at each SPLICE connector</p>
+          </div>
+        </div>
+      </div>
+      <div class="sensor-item">
+        <div class="sensor-row">
+          <div class="sensor-dot" style="background:var(--green); margin-top:6px;"></div>
+          <div>
+            <div class="sensor-name">Sensor collar</div>
+            <p class="sensor-desc">Localises fault position before excavation begins</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══ 06 WHAT YOU GET + NEXT STEPS ════════════════════ -->
+<section>
+<div class="sl">
+  <div class="sl-top"><b>05</b> &nbsp;—&nbsp; Value &amp; Next Steps</div>
+  <div class="s6-layout">
+    <div class="s6-left">
+      <div class="benefit">
+        <div class="ben-dot" style="background:var(--green)"></div>
+        <div class="ben-text">
+          Faster maintenance
+          <small>Surgical segment swap — line stays live</small>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="ben-dot" style="background:var(--blue)"></div>
+        <div class="ben-text">
+          Happier Energinet &amp; end users
+          <small>No outage during repair</small>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="ben-dot" style="background:var(--orange)"></div>
+        <div class="ben-text">
+          Better R&amp;D capability
+          <small>Isolate sections to test improvements &amp; study degradation</small>
+        </div>
+      </div>
+    </div>
+    <div class="s6-right">
+      <div class="step-row done">
+        <div class="step-num">01</div>
+        <div>
+          <div class="step-title">Simulation <span class="done-tag">DONE</span></div>
+          <p class="step-desc">Interactive technician training tool — complete.</p>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">02</div>
+        <div>
+          <div class="step-title">Validate concept</div>
+          <p class="step-desc">Experimental bench test of isolation connector at 77 K.</p>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">03</div>
+        <div>
+          <div class="step-title">Pilot installation</div>
+          <p class="step-desc">Install on a non-critical segment. Document repair time, LN₂ use &amp; downtime KPIs.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.js"></script>
+<script>
+Reveal.initialize({
+  width:1200, height:675,
+  margin:0, minScale:0.1, maxScale:4,
+  controls:false, progress:true,
+  center:false, hash:false, touch:true,
+  transition:'fade', transitionSpeed:'fast',
+  backgroundTransition:'none'
+});
+
+Reveal.on('slidechanged', function(e) {
+  if (e.indexh === 3) setTimeout(sizeIframe, 60);
+});
+
+function sizeIframe() {
+  var wrap = document.getElementById('sim-wrap');
+  var iframe = document.getElementById('sim-iframe');
+  var W = wrap.clientWidth, H = wrap.clientHeight;
+  var natW = 1100, natH = 580;
+  var sc = Math.min(W/natW, H/natH);
+  iframe.style.width = natW+'px';
+  iframe.style.height = natH+'px';
+  iframe.style.transform = 'scale('+sc+')';
+}
+</script>
+</body>
+</html>
